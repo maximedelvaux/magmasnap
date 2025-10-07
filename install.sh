@@ -50,6 +50,7 @@ echo ""
 # Download or copy the magmasnap script
 SCRIPT_URL="https://raw.githubusercontent.com/maximedelvaux/magmasnap/main/magmasnap"
 SCRIPT_PATH="$INSTALL_DIR/magmasnap"
+ALIAS_PATH="$INSTALL_DIR/mgms"
 
 # Check if we're running from the repo directory
 if [ -f "$(dirname "$0")/magmasnap" ]; then
@@ -70,9 +71,13 @@ fi
 
 chmod +x "$SCRIPT_PATH"
 
+# Create mgms alias/symlink
+ln -sf "$SCRIPT_PATH" "$ALIAS_PATH"
+
 echo -e "${GREEN}✓ Installed successfully!${NC}"
 echo ""
 echo -e "${BLUE}Location:${NC} $SCRIPT_PATH"
+echo -e "${BLUE}Shortcut:${NC} mgms (symlink created)"
 echo -e "${BLUE}Backup directory:${NC} ~/.magmasnap (configurable)"
 echo ""
 
@@ -81,8 +86,8 @@ if echo "$PATH" | grep -q "$INSTALL_DIR"; then
     echo -e "${GREEN}✓ Ready to use!${NC}"
     echo ""
     echo "Try it now:"
-    echo -e "  ${YELLOW}magmasnap save${NC}"
-    echo -e "  ${YELLOW}magmasnap list${NC}"
+    echo -e "  ${YELLOW}mgms save${NC}       (or: magmasnap save)"
+    echo -e "  ${YELLOW}mgms list${NC}       (or: magmasnap list)"
 else
     echo -e "${YELLOW}⚠️  Adding $INSTALL_DIR to your PATH...${NC}"
 
@@ -108,15 +113,15 @@ else
     echo -e "  ${YELLOW}source $SHELL_RC${NC}"
     echo ""
     echo "Or open a new terminal, then try:"
-    echo -e "  ${YELLOW}magmasnap save${NC}"
+    echo -e "  ${YELLOW}mgms save${NC}"
 fi
 
 echo ""
 echo -e "${BLUE}📖 Quick Reference:${NC}"
-echo "  magmasnap save [tag]    Create snapshot"
-echo "  magmasnap list          View snapshots"
-echo "  magmasnap restore N     Restore snapshot N"
-echo "  magmasnap diff N        See changes"
-echo "  magmasnap config        View settings"
+echo "  mgms save [tag]    Create snapshot"
+echo "  mgms list          View snapshots"
+echo "  mgms restore N     Restore snapshot N"
+echo "  mgms diff N        See changes"
+echo "  mgms config        View settings"
 echo ""
 echo -e "${MAGENTA}🌋 Happy snapshotting!${NC}"

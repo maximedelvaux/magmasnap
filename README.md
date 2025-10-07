@@ -4,6 +4,8 @@
 
 Copy-paste ready • Zero config • Works anywhere • Just 200 lines of pure bash
 
+> **Quick command:** Use `mgms` instead of `magmasnap` to save typing!
+
 ## ⚡ Quick Start
 
 ### Option 1: One-Liner Install (Recommended)
@@ -13,8 +15,9 @@ curl -fsSL https://raw.githubusercontent.com/maximedelvaux/magmasnap/main/instal
 
 This will:
 - Download and install `magmasnap` to `~/bin` or `/usr/local/bin`
+- Create `mgms` shortcut (symlink)
 - Add to your PATH automatically
-- Ready to use immediately: `magmasnap save`
+- Ready to use immediately: `mgms save`
 
 ### Option 2: Manual Download (Copy-Paste Ready)
 ```bash
@@ -45,15 +48,15 @@ Just copy the [magmasnap](magmasnap) file anywhere and run it. That's it!
 
 ### Save a Snapshot
 ```bash
-magmasnap save                    # Quick snapshot
-magmasnap save before-rebase      # With descriptive tag
-magmasnap s                       # Short form
+mgms save                         # Quick snapshot
+mgms save before-rebase           # With descriptive tag
+mgms s                            # Ultra-short form
 ```
 
 ### List Snapshots
 ```bash
-magmasnap list                    # Shows all snapshots with sizes
-magmasnap l                       # Short form
+mgms list                         # Shows all snapshots with sizes
+mgms l                            # Short form
 ```
 
 Output:
@@ -66,58 +69,58 @@ Output:
 
 ### Restore a Snapshot
 ```bash
-magmasnap restore 1               # Restore latest (with confirmation)
-magmasnap r 1                     # Short form
+mgms restore 1                    # Restore latest (with confirmation)
+mgms r 1                          # Short form
 ```
 
 ### See What Changed
 ```bash
-magmasnap diff 1                  # Compare current state to snapshot #1
-magmasnap d 1                     # Short form
+mgms diff 1                       # Compare current state to snapshot #1
+mgms d 1                          # Short form
 ```
 
 ### Clean Up
 ```bash
-magmasnap clean                   # Delete all snapshots for current project
-magmasnap c                       # Short form
+mgms clean                        # Delete all snapshots for current project
+mgms c                            # Short form
 ```
 
 ### Configuration
 ```bash
-magmasnap config                  # View current settings
+mgms config                       # View current settings
 ```
 
 ## 🎯 Real-World Examples
 
 ### Before Git Rebase
 ```bash
-magmasnap save before-rebase
+mgms save before-rebase
 git rebase -i HEAD~5
 # If something goes wrong:
-magmasnap restore 1
+mgms restore 1
 ```
 
 ### Before Complex Refactoring
 ```bash
-magmasnap save pre-refactor
+mgms save pre-refactor
 # Make your changes...
-magmasnap diff 1              # See what changed
+mgms diff 1                   # See what changed
 # If you want to start over:
-magmasnap restore 1
+mgms restore 1
 ```
 
 ### Before Dangerous Operations
 ```bash
-magmasnap save
+mgms save
 rm -rf src/                   # Oops!
-magmasnap restore 1           # Phew! 💨
+mgms restore 1                # Phew! 💨
 ```
 
 ### Experimenting with Code
 ```bash
-magmasnap save stable-version
+mgms save stable-version
 # Try experimental changes...
-magmasnap diff 1              # Review changes
+mgms diff 1                   # Review changes
 # Keep or revert based on results
 ```
 
@@ -236,11 +239,12 @@ Keep it simple, keep it portable, keep it minimal! 🌋
 
 ## 💡 Tips
 
-- Use **tags** for important snapshots: `magmasnap save before-big-refactor`
-- Run `magmasnap diff` before restore to see what you'll lose
+- Use **tags** for important snapshots: `mgms save before-big-refactor`
+- Run `mgms diff 1` before restore to see what you'll lose
 - Snapshots are **per-project** (based on directory name)
 - Set `MAGMASNAP_DIR` to a fast SSD for best performance
-- Combine with `watch`: `watch -n 60 'magmasnap save auto'` for auto-snapshots
+- Combine with `watch`: `watch -n 60 'mgms save auto'` for auto-snapshots
+- The `mgms` command is just a symlink - both `mgms` and `magmasnap` work!
 
 ---
 
