@@ -37,12 +37,14 @@ Just copy the [magmasnap](magmasnap) file anywhere and run it. That's it!
 
 - 🚀 **Zero Config** - Works out of the box, no installation needed
 - ⚡ **Fast** - Uses rsync for efficient incremental backups
-- 🎯 **Simple** - Just 4 main commands: save, list, restore, diff
+- 🎯 **Simple** - Core commands: save, list, restore, diff, rm, clean, clear, auto
 - 🌍 **Portable** - Single file, works on any Unix system (Linux/macOS/WSL)
 - 🏷️ **Tagged Snapshots** - Optional labels for important saves
 - 📊 **Diff Support** - See what changed since a snapshot
 - 💾 **Size Aware** - Shows snapshot sizes automatically
 - 🧹 **Smart Exclusions** - Auto-excludes .git, node_modules, build artifacts
+- 🗑️ **Granular Cleanup** - Remove specific snapshots or clean entire projects
+- 🤖 **Auto-Snapshot** - Automatic periodic backups while you work
 
 ## 📖 Usage
 
@@ -79,11 +81,28 @@ mgms diff 1                       # Compare current state to snapshot #1
 mgms d 1                          # Short form
 ```
 
-### Clean Up
+### Remove Specific Snapshot
+```bash
+mgms rm 3                         # Delete snapshot #3
+```
+
+### Clean Up Current Project
 ```bash
 mgms clean                        # Delete all snapshots for current project
 mgms c                            # Short form
 ```
+
+### Clear All Snapshots (All Projects)
+```bash
+mgms clear                        # Delete ALL snapshots from ALL projects
+```
+
+### Auto-Snapshot Mode
+```bash
+mgms auto 3                       # Auto-snapshot every 3 minutes
+mgms auto                         # Auto-snapshot every 5 minutes (default)
+```
+Press `Ctrl+C` to stop. Creates snapshots tagged with `_auto`.
 
 ### Configuration
 ```bash
@@ -122,6 +141,15 @@ mgms save stable-version
 # Try experimental changes...
 mgms diff 1                   # Review changes
 # Keep or revert based on results
+```
+
+### Long Coding Session with Auto-Backups
+```bash
+# Start auto-snapshots in the background
+mgms auto 10 &                # Snapshot every 10 minutes
+# Work on your code...
+# Snapshots happen automatically
+# Stop with: kill %1 or Ctrl+C if in foreground
 ```
 
 ## ⚙️ Configuration
