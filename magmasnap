@@ -51,7 +51,7 @@ case "$1" in
     # Use rsync for efficient backup
     rsync -a --info=progress2 $EXCLUDE_ARGS "$CURRENT_DIR/" "$BACKUP_PATH/" 2>&1 | grep -v "^$" || true
 
-    SIZE=$(du -sh "$BACKUP_PATH" 2>/dev/null | cut -f1)
+    SIZE=$(du -sh "$BACKUP_PATH" 2>/dev/null | awk '{print $1}')
     echo -e "${GREEN}✓ Snapshot saved${NC} ($SIZE)"
     echo -e "  ${BACKUP_PATH}"
     ;;
@@ -68,16 +68,15 @@ case "$1" in
       echo "  No snapshots found for this project"
     else
       # List with sizes and numbers
+      IDX=1
       find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
         xargs -0 ls -td | \
         head -20 | \
-        nl -w2 -s'. ' | \
-        while IFS= read -r line; do
-          NUM=$(echo "$line" | awk '{print $1}')
-          PATH=$(echo "$line" | cut -d' ' -f2-)
-          SIZE=$(du -sh "$PATH" 2>/dev/null | cut -f1 || echo "?")
-          NAME=$(basename "$PATH")
-          echo "  $NUM $NAME ($SIZE)"
+        while IFS= read -r SNAP_PATH; do
+          SIZE=$(du -sh "$SNAP_PATH" 2>/dev/null | awk '{print $1}' || echo "?")
+          NAME="${SNAP_PATH##*/}"
+          echo "  $IDX. $NAME ($SIZE)"
+          IDX=$((IDX + 1))
         done
 
       if [ "$COUNT" -gt 20 ]; then
@@ -153,20 +152,19 @@ case "$1" in
     fi
 
     # Show list
+    IDX=1
     find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
       xargs -0 ls -td | \
       head -20 | \
-      nl -w2 -s'. ' | \
-      while IFS= read -r line; do
-        NUM=$(echo "$line" | awk '{print $1}')
-        PATH=$(echo "$line" | cut -d' ' -f2-)
-        SIZE=$(du -sh "$PATH" 2>/dev/null | cut -f1 || echo "?")
-        NAME=$(basename "$PATH")
-        echo "  $NUM $NAME ($SIZE)"
+      while IFS= read -r SNAP_PATH; do
+        SIZE=$(du -sh "$SNAP_PATH" 2>/dev/null | awk '{print $1}' || echo "?")
+        NAME="${SNAP_PATH##*/}"
+        echo "  $IDX. $NAME ($SIZE)"
+        IDX=$((IDX + 1))
       done
 
     echo ""
-    TOTAL_SIZE=$(du -sh "$BACKUP_ROOT" 2>/dev/null | cut -f1)
+    TOTAL_SIZE=$(du -sh "$BACKUP_ROOT" 2>/dev/null | awk '{print $1}')
     echo -e "Total: $COUNT snapshot(s) using $TOTAL_SIZE"
     echo ""
 
