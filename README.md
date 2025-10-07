@@ -258,7 +258,7 @@ sudo dnf install rsync
 
 ## 🤝 Contributing
 
-It's a single ~200-line bash script! Feel free to:
+It's a single ~300-line bash script! Feel free to:
 - Fork it and customize
 - Submit PRs for improvements
 - Create your own variants
@@ -271,7 +271,6 @@ Keep it simple, keep it portable, keep it minimal! 🌋
 - Run `mgms diff 1` before restore to see what you'll lose
 - Snapshots are **per-project** (based on directory name)
 - Set `MAGMASNAP_DIR` to a fast SSD for best performance
-- Combine with `watch`: `watch -n 60 'mgms save auto'` for auto-snapshots
 - The `mgms` command is just a symlink - both `mgms` and `magmasnap` work!
 
 ---
