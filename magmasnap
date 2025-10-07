@@ -1,0 +1,222 @@
+#!/bin/bash
+# 🌋 magmasnap - Ultra-minimal snapshot backup utility
+# Copy this file anywhere and run: chmod +x magmasnap && ./magmasnap save
+# Zero configuration required - just works!
+
+set -e
+
+# Configuration (edit if needed)
+BACKUP_ROOT="${MAGMASNAP_DIR:-$HOME/.magmasnap}"
+EXCLUDE_PATTERNS=".git node_modules dist build vendor .next target __pycache__ .venv venv"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Check for rsync
+if ! command -v rsync &> /dev/null; then
+    echo -e "${RED}❌ rsync is not installed${NC}"
+    echo "Install it with:"
+    echo "  • Ubuntu/Debian: sudo apt-get install rsync"
+    echo "  • macOS: brew install rsync (or use built-in)"
+    echo "  • Fedora/RHEL: sudo dnf install rsync"
+    exit 1
+fi
+
+CURRENT_DIR="$(pwd)"
+PROJECT_NAME=$(basename "$CURRENT_DIR")
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Build rsync exclude args
+EXCLUDE_ARGS=""
+for pattern in $EXCLUDE_PATTERNS; do
+    EXCLUDE_ARGS="$EXCLUDE_ARGS --exclude=$pattern"
+done
+
+case "$1" in
+  save|s)
+    TAG="${2:-}"
+    if [ -n "$TAG" ]; then
+        BACKUP_PATH="$BACKUP_ROOT/${PROJECT_NAME}_${TIMESTAMP}_${TAG}"
+    else
+        BACKUP_PATH="$BACKUP_ROOT/${PROJECT_NAME}_${TIMESTAMP}"
+    fi
+
+    echo -e "${BLUE}🌋 Creating snapshot...${NC}"
+    mkdir -p "$BACKUP_PATH"
+
+    # Use rsync for efficient backup
+    rsync -a --info=progress2 $EXCLUDE_ARGS "$CURRENT_DIR/" "$BACKUP_PATH/" 2>&1 | grep -v "^$" || true
+
+    SIZE=$(du -sh "$BACKUP_PATH" 2>/dev/null | cut -f1)
+    echo -e "${GREEN}✓ Snapshot saved${NC} ($SIZE)"
+    echo -e "  ${BACKUP_PATH}"
+    ;;
+
+  list|l)
+    echo -e "${BLUE}📋 Snapshots for ${PROJECT_NAME}:${NC}"
+    if [ ! -d "$BACKUP_ROOT" ]; then
+      echo "  No snapshots found - backup directory does not exist yet"
+      exit 0
+    fi
+
+    COUNT=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" 2>/dev/null | wc -l)
+    if [ "$COUNT" -eq 0 ]; then
+      echo "  No snapshots found for this project"
+    else
+      # List with sizes and numbers
+      find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
+        xargs -0 ls -td | \
+        head -20 | \
+        nl -w2 -s'. ' | \
+        while IFS= read -r line; do
+          NUM=$(echo "$line" | awk '{print $1}')
+          PATH=$(echo "$line" | cut -d' ' -f2-)
+          SIZE=$(du -sh "$PATH" 2>/dev/null | cut -f1 || echo "?")
+          NAME=$(basename "$PATH")
+          echo "  $NUM $NAME ($SIZE)"
+        done
+
+      if [ "$COUNT" -gt 20 ]; then
+        echo -e "\n  ... and $((COUNT - 20)) more"
+      fi
+    fi
+    ;;
+
+  restore|r)
+    if [ -z "$2" ]; then
+      echo -e "${RED}❌ Please specify snapshot number${NC}"
+      echo "Use 'magmasnap list' to see available snapshots"
+      exit 1
+    fi
+
+    # Find the Nth snapshot
+    BACKUP=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
+             xargs -0 ls -td | sed -n "${2}p")
+
+    if [ -z "$BACKUP" ]; then
+      echo -e "${RED}❌ Snapshot #$2 not found${NC}"
+      exit 1
+    fi
+
+    BACKUP_PATH="$BACKUP"
+    echo -e "${YELLOW}⚠️  WARNING: This will restore from:${NC}"
+    echo -e "  ${BACKUP_PATH}"
+    echo -e "  ${YELLOW}to:${NC} $CURRENT_DIR"
+    echo ""
+    read -p "Continue? (yes/no): " confirm
+
+    if [ "$confirm" = "yes" ]; then
+      echo -e "${BLUE}🌋 Restoring...${NC}"
+      rsync -a --info=progress2 --delete \
+        --exclude='.git' --exclude='node_modules' \
+        "$BACKUP_PATH/" "$CURRENT_DIR/" 2>&1 | grep -v "^$" || true
+      echo -e "${GREEN}✓ Restored successfully${NC}"
+    else
+      echo "Cancelled"
+    fi
+    ;;
+
+  diff|d)
+    if [ -z "$2" ]; then
+      echo -e "${RED}❌ Please specify snapshot number${NC}"
+      exit 1
+    fi
+
+    BACKUP=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
+             xargs -0 ls -td | sed -n "${2}p")
+
+    if [ -z "$BACKUP" ]; then
+      echo -e "${RED}❌ Snapshot #$2 not found${NC}"
+      exit 1
+    fi
+
+    echo -e "${BLUE}📊 Changes since snapshot #$2:${NC}"
+    rsync -avn --delete $EXCLUDE_ARGS "$BACKUP/" "$CURRENT_DIR/" | grep -E '^(deleting|<|>)' || echo "  No changes"
+    ;;
+
+  clean|c)
+    if [ ! -d "$BACKUP_ROOT" ]; then
+      echo "No backups directory found"
+      exit 0
+    fi
+
+    echo -e "${BLUE}Snapshots for ${PROJECT_NAME}:${NC}"
+    COUNT=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" 2>/dev/null | wc -l)
+
+    if [ "$COUNT" -eq 0 ]; then
+      echo "  No snapshots found for this project"
+      exit 0
+    fi
+
+    # Show list
+    find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
+      xargs -0 ls -td | \
+      head -20 | \
+      nl -w2 -s'. ' | \
+      while IFS= read -r line; do
+        NUM=$(echo "$line" | awk '{print $1}')
+        PATH=$(echo "$line" | cut -d' ' -f2-)
+        SIZE=$(du -sh "$PATH" 2>/dev/null | cut -f1 || echo "?")
+        NAME=$(basename "$PATH")
+        echo "  $NUM $NAME ($SIZE)"
+      done
+
+    echo ""
+    TOTAL_SIZE=$(du -sh "$BACKUP_ROOT" 2>/dev/null | cut -f1)
+    echo -e "Total: $COUNT snapshot(s) using $TOTAL_SIZE"
+    echo ""
+
+    read -p "Delete all snapshots for $PROJECT_NAME? (yes/no): " confirm
+    if [ "$confirm" = "yes" ]; then
+      find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -exec rm -rf {} + 2>/dev/null
+      echo -e "${GREEN}✓ All snapshots deleted${NC}"
+    else
+      echo "Cancelled"
+    fi
+    ;;
+
+  config|cfg)
+    echo -e "${BLUE}🌋 Magmasnap Configuration:${NC}"
+    echo "  Backup directory: $BACKUP_ROOT"
+    echo "  Current location: $(readlink -f "$0" 2>/dev/null || echo "$0")"
+    echo "  Excluded patterns: $EXCLUDE_PATTERNS"
+    echo ""
+    echo "To customize, edit the script or set:"
+    echo "  export MAGMASNAP_DIR=/your/backup/path"
+    ;;
+
+  *)
+    cat << 'EOFHELP'
+🌋 magmasnap - Ultra-minimal snapshot backup utility
+
+Usage:
+  magmasnap save [tag]   Create a snapshot (optionally with tag)
+  magmasnap list         List all snapshots for current directory
+  magmasnap restore N    Restore snapshot number N
+  magmasnap diff N       Show changes since snapshot N
+  magmasnap clean        Delete all snapshots for current directory
+  magmasnap config       Show current configuration
+
+Shortcuts: s (save), l (list), r (restore), d (diff), c (clean), cfg (config)
+
+Examples:
+  magmasnap save                    # Quick snapshot
+  magmasnap save before-rebase      # Tagged snapshot
+  magmasnap list                    # See all snapshots
+  magmasnap restore 1               # Restore latest
+  magmasnap diff 1                  # See what changed
+
+Perfect for backing up before dangerous git operations!
+
+Configuration:
+  • Backups stored in: ~/.magmasnap
+  • Custom location: export MAGMASNAP_DIR=/your/path
+  • Zero config required - just run it!
+EOFHELP
+    [ -n "$1" ] && exit 1 || exit 0
+    ;;
+esac
