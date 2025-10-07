@@ -2,7 +2,7 @@
 
 **Ultra-minimal snapshot backups** - Perfect for backing up before dangerous git operations!
 
-Copy-paste ready • Zero config • Works anywhere • Just 200 lines of pure bash
+Copy-paste ready • Zero config • Works anywhere • Just 300 lines of pure bash
 
 > **Quick command:** Use `mgms` instead of `magmasnap` to save typing!
 
