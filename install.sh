@@ -1,6 +1,6 @@
 #!/bin/bash
 # 🌋 Magmasnap Installer
-# One-liner: curl -fsSL https://raw.githubusercontent.com/you/magmasnap/main/install.sh | bash
+# One-liner: curl -fsSL https://raw.githubusercontent.com/maximedelvaux/magmasnap/main/install.sh | bash
 
 set -e
 
