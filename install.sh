@@ -48,7 +48,7 @@ echo -e "${BLUE}📦 Installing magmasnap...${NC}"
 echo ""
 
 # Download or copy the magmasnap script
-SCRIPT_URL="https://raw.githubusercontent.com/you/magmasnap/main/magmasnap"
+SCRIPT_URL="https://raw.githubusercontent.com/maximedelvaux/magmasnap/main/magmasnap"
 SCRIPT_PATH="$INSTALL_DIR/magmasnap"
 
 # Check if we're running from the repo directory

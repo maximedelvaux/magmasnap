@@ -18,7 +18,7 @@ This will:
 
 ### Option 2: Manual Download (Copy-Paste Ready)
 ```bash
-curl -O https://raw.githubusercontent.com/you/magmasnap/main/magmasnap
+curl -O https://raw.githubusercontent.com/maximedelvaux/magmasnap/main/magmasnap
 chmod +x magmasnap
 
 # Use it immediately
