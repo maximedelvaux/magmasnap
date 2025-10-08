@@ -86,18 +86,15 @@ case "$1" in
     ;;
 
   restore|r)
-    if [ -z "$2" ]; then
-      echo -e "${RED}❌ Please specify snapshot number${NC}"
-      echo "Use 'magmasnap list' to see available snapshots"
-      exit 1
-    fi
+    # Default to snapshot #1 if no number specified
+    SNAPSHOT_NUM="${2:-1}"
 
     # Find the Nth snapshot
     BACKUP=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
-             xargs -0 ls -td | sed -n "${2}p")
+             xargs -0 ls -td | sed -n "${SNAPSHOT_NUM}p")
 
     if [ -z "$BACKUP" ]; then
-      echo -e "${RED}❌ Snapshot #$2 not found${NC}"
+      echo -e "${RED}❌ Snapshot #$SNAPSHOT_NUM not found${NC}"
       exit 1
     fi
 
@@ -120,20 +117,18 @@ case "$1" in
     ;;
 
   diff|d)
-    if [ -z "$2" ]; then
-      echo -e "${RED}❌ Please specify snapshot number${NC}"
-      exit 1
-    fi
+    # Default to snapshot #1 if no number specified
+    SNAPSHOT_NUM="${2:-1}"
 
     BACKUP=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -print0 2>/dev/null | \
-             xargs -0 ls -td | sed -n "${2}p")
+             xargs -0 ls -td | sed -n "${SNAPSHOT_NUM}p")
 
     if [ -z "$BACKUP" ]; then
-      echo -e "${RED}❌ Snapshot #$2 not found${NC}"
+      echo -e "${RED}❌ Snapshot #$SNAPSHOT_NUM not found${NC}"
       exit 1
     fi
 
-    echo -e "${BLUE}📊 Changes since snapshot #$2:${NC}"
+    echo -e "${BLUE}📊 Changes since snapshot #$SNAPSHOT_NUM:${NC}"
     rsync -avn --delete $EXCLUDE_ARGS "$BACKUP/" "$CURRENT_DIR/" | grep -E '^(deleting|<|>)' || echo "  No changes"
     ;;
 
@@ -284,8 +279,8 @@ case "$1" in
 Usage:
   mgms save [tag]   Create a snapshot (optionally with tag)
   mgms list         List all snapshots for current directory
-  mgms restore N    Restore snapshot number N
-  mgms diff N       Show changes since snapshot N
+  mgms restore [N]  Restore snapshot number N (default: latest)
+  mgms diff [N]     Show changes since snapshot N (default: latest)
   mgms rm N         Remove specific snapshot number N
   mgms clean        Delete all snapshots for current directory
   mgms clear        Delete ALL snapshots from ALL projects
@@ -298,8 +293,10 @@ Examples:
   mgms save                    # Quick snapshot
   mgms save before-rebase      # Tagged snapshot
   mgms list                    # See all snapshots
-  mgms restore 1               # Restore latest
-  mgms diff 1                  # See what changed
+  mgms restore                 # Restore latest (snapshot #1)
+  mgms restore 2               # Restore snapshot #2
+  mgms diff                    # See what changed since latest
+  mgms diff 2                  # See changes since snapshot #2
   mgms rm 3                    # Remove snapshot #3
   mgms clean                   # Remove all snapshots for this project
   mgms clear                   # Remove ALL snapshots (all projects)

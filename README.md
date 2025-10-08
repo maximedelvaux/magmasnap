@@ -71,14 +71,20 @@ Output:
 
 ### Restore a Snapshot
 ```bash
+mgms restore                      # Restore latest (with confirmation)
 mgms restore 1                    # Restore latest (with confirmation)
-mgms r 1                          # Short form
+mgms restore 2                    # Restore snapshot #2
+mgms r                            # Short form (restores latest)
+mgms r 2                          # Short form for snapshot #2
 ```
 
 ### See What Changed
 ```bash
+mgms diff                         # Compare current state to latest snapshot
 mgms diff 1                       # Compare current state to snapshot #1
-mgms d 1                          # Short form
+mgms diff 2                       # Compare to snapshot #2
+mgms d                            # Short form (compares to latest)
+mgms d 2                          # Short form for snapshot #2
 ```
 
 ### Remove Specific Snapshot
@@ -116,30 +122,30 @@ mgms config                       # View current settings
 mgms save before-rebase
 git rebase -i HEAD~5
 # If something goes wrong:
-mgms restore 1
+mgms restore                  # Restores latest snapshot
 ```
 
 ### Before Complex Refactoring
 ```bash
 mgms save pre-refactor
 # Make your changes...
-mgms diff 1                   # See what changed
+mgms diff                     # See what changed since latest
 # If you want to start over:
-mgms restore 1
+mgms restore                  # Restores latest snapshot
 ```
 
 ### Before Dangerous Operations
 ```bash
 mgms save
 rm -rf src/                   # Oops!
-mgms restore 1                # Phew! 💨
+mgms restore                  # Phew! 💨 (restores latest)
 ```
 
 ### Experimenting with Code
 ```bash
 mgms save stable-version
 # Try experimental changes...
-mgms diff 1                   # Review changes
+mgms diff                     # Review changes from latest
 # Keep or revert based on results
 ```
 
