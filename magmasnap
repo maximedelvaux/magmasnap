@@ -86,6 +86,20 @@ case "$1" in
     ;;
 
   restore|r)
+    # Check if backup directory and snapshots exist
+    if [ ! -d "$BACKUP_ROOT" ]; then
+      echo -e "${RED}❌ No snapshots found for this project${NC}"
+      echo "Create one with: mgms save"
+      exit 1
+    fi
+
+    COUNT=$(find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" 2>/dev/null | wc -l)
+    if [ "$COUNT" -eq 0 ]; then
+      echo -e "${RED}❌ No snapshots found for this project${NC}"
+      echo "Create one with: mgms save"
+      exit 1
+    fi
+
     # Default to snapshot #1 if no number specified
     SNAPSHOT_NUM="${2:-1}"
 
@@ -95,6 +109,7 @@ case "$1" in
 
     if [ -z "$BACKUP" ]; then
       echo -e "${RED}❌ Snapshot #$SNAPSHOT_NUM not found${NC}"
+      echo "Use 'mgms list' to see available snapshots"
       exit 1
     fi
 
@@ -189,8 +204,7 @@ case "$1" in
       done
 
     echo ""
-    TOTAL_SIZE=$(du -shc "$BACKUP_ROOT"/${PROJECT_NAME}_* 2>/dev/null | tail -1 | awk '{print $1}')
-    echo -e "Total: $COUNT snapshot(s) using $TOTAL_SIZE"
+    echo -e "Total: $COUNT snapshot(s)"
     echo ""
 
     read -p "Delete ALL snapshots for $PROJECT_NAME? (y/n): " confirm
