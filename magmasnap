@@ -189,7 +189,7 @@ case "$1" in
       done
 
     echo ""
-    TOTAL_SIZE=$(du -sh "$BACKUP_ROOT" 2>/dev/null | awk '{print $1}')
+    TOTAL_SIZE=$(du -shc "$BACKUP_ROOT"/${PROJECT_NAME}_* 2>/dev/null | tail -1 | awk '{print $1}')
     echo -e "Total: $COUNT snapshot(s) using $TOTAL_SIZE"
     echo ""
 
