@@ -103,9 +103,9 @@ case "$1" in
     echo -e "  ${BACKUP_PATH}"
     echo -e "  ${YELLOW}to:${NC} $CURRENT_DIR"
     echo ""
-    read -p "Continue? (yes/no): " confirm
+    read -p "Continue? (y/n): " confirm
 
-    if [ "$confirm" = "yes" ]; then
+    if [[ "$confirm" =~ ^[Yy](es)?$ ]]; then
       echo -e "${BLUE}🌋 Restoring...${NC}"
       rsync -a --info=progress2 --delete \
         --exclude='.git' --exclude='node_modules' \
@@ -152,9 +152,9 @@ case "$1" in
     SIZE=$(du -sh "$BACKUP_PATH" 2>/dev/null | awk '{print $1}')
     echo -e "${YELLOW}⚠️  Delete snapshot:${NC}"
     echo -e "  ${BACKUP_PATH##*/} ($SIZE)"
-    read -p "Continue? (yes/no): " confirm
+    read -p "Continue? (y/n): " confirm
 
-    if [ "$confirm" = "yes" ]; then
+    if [[ "$confirm" =~ ^[Yy](es)?$ ]]; then
       rm -rf "$BACKUP_PATH"
       echo -e "${GREEN}✓ Snapshot deleted${NC}"
     else
@@ -193,8 +193,8 @@ case "$1" in
     echo -e "Total: $COUNT snapshot(s) using $TOTAL_SIZE"
     echo ""
 
-    read -p "Delete ALL snapshots for $PROJECT_NAME? (yes/no): " confirm
-    if [ "$confirm" = "yes" ]; then
+    read -p "Delete ALL snapshots for $PROJECT_NAME? (y/n): " confirm
+    if [[ "$confirm" =~ ^[Yy](es)?$ ]]; then
       find "$BACKUP_ROOT" -maxdepth 1 -type d -name "${PROJECT_NAME}_*" -exec rm -rf {} + 2>/dev/null
       echo -e "${GREEN}✓ All snapshots deleted${NC}"
     else
@@ -221,9 +221,9 @@ case "$1" in
     echo -e "  Total snapshots: $TOTAL_COUNT"
     echo -e "  Total size: $TOTAL_SIZE"
     echo ""
-    read -p "Are you sure you want to delete EVERYTHING? (yes/no): " confirm
+    read -p "Are you sure you want to delete EVERYTHING? (y/n): " confirm
 
-    if [ "$confirm" = "yes" ]; then
+    if [[ "$confirm" =~ ^[Yy](es)?$ ]]; then
       rm -rf "$BACKUP_ROOT"/*
       echo -e "${GREEN}✓ All snapshots cleared${NC}"
     else
